@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS ext_cloudflare_subdomain_audit_events;
+DROP TABLE IF EXISTS ext_cloudflare_subdomain_generated_records;
+DROP TABLE IF EXISTS ext_cloudflare_subdomain_assignments;
+DROP TABLE IF EXISTS ext_cloudflare_subdomain_record_templates;
+DROP TABLE IF EXISTS ext_cloudflare_subdomain_alias_rules;
+DROP TABLE IF EXISTS ext_cloudflare_subdomain_blacklist_rules;
+DROP TABLE IF EXISTS ext_cloudflare_subdomain_managed_domains;
+DROP TABLE IF EXISTS ext_cloudflare_subdomain_providers;
