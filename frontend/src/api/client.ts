@@ -1,9 +1,71 @@
 import { axiosInstance } from '@/api/axios.ts';
 import type { AdminConfigResponse, ApiAssignment, ClientSubdomainResponse } from '../types/index.ts';
 
+const toArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
+
+function normalizeAdminConfig(payload: unknown): AdminConfigResponse {
+  const source = (payload ?? {}) as Record<string, unknown>;
+
+  return {
+    providers: toArray<Record<string, unknown>>(source.providers).map((provider) => ({
+      uuid: String(provider.uuid ?? ''),
+      name: String(provider.name ?? ''),
+      providerType: String(provider.providerType ?? provider.provider_type ?? ''),
+      enabled: Boolean(provider.enabled),
+      created: String(provider.created ?? ''),
+      updated: String(provider.updated ?? ''),
+    })),
+    managedDomains: toArray<Record<string, unknown>>(source.managedDomains ?? source.managed_domains).map((domain) => ({
+      uuid: String(domain.uuid ?? ''),
+      providerUuid: String(domain.providerUuid ?? domain.provider_uuid ?? ''),
+      displayName: String(domain.displayName ?? domain.display_name ?? ''),
+      baseDomain: String(domain.baseDomain ?? domain.base_domain ?? ''),
+      zoneName: String(domain.zoneName ?? domain.zone_name ?? ''),
+      zoneId: String(domain.zoneId ?? domain.zone_id ?? ''),
+      defaultTtl: Number(domain.defaultTtl ?? domain.default_ttl ?? 300),
+      defaultProxied: Boolean(domain.defaultProxied ?? domain.default_proxied),
+      game: (domain.game as string | null | undefined) ?? null,
+      allowUserUpdates: Boolean(domain.allowUserUpdates ?? domain.allow_user_updates),
+      allowedRecordTypes: toArray<string>(domain.allowedRecordTypes ?? domain.allowed_record_types).map(String),
+    })),
+    blacklistRules: toArray<Record<string, unknown>>(source.blacklistRules ?? source.blacklist_rules).map((rule) => ({
+      uuid: String(rule.uuid ?? ''),
+      managedDomainUuid: (rule.managedDomainUuid ?? rule.managed_domain_uuid ?? null) as string | null,
+      pattern: String(rule.pattern ?? ''),
+      caseSensitive: Boolean(rule.caseSensitive ?? rule.case_sensitive),
+      enabled: Boolean(rule.enabled),
+      description: (rule.description ?? null) as string | null,
+    })),
+    aliasRules: toArray<Record<string, unknown>>(source.aliasRules ?? source.alias_rules).map((rule) => ({
+      uuid: String(rule.uuid ?? ''),
+      managedDomainUuid: (rule.managedDomainUuid ?? rule.managed_domain_uuid ?? null) as string | null,
+      source: String(rule.source ?? ''),
+      target: String(rule.target ?? ''),
+      enabled: Boolean(rule.enabled),
+    })),
+    recordTemplates: toArray<Record<string, unknown>>(source.recordTemplates ?? source.record_templates).map((template) => ({
+      uuid: String(template.uuid ?? ''),
+      managedDomainUuid: String(template.managedDomainUuid ?? template.managed_domain_uuid ?? ''),
+      eggUuid: (template.eggUuid ?? template.egg_uuid ?? null) as string | null,
+      game: (template.game as string | null | undefined) ?? null,
+      recordType: String(template.recordType ?? template.record_type ?? ''),
+      contentTemplate: String(template.contentTemplate ?? template.content_template ?? ''),
+      ttl: (template.ttl ?? null) as number | null,
+      proxied: (template.proxied ?? null) as boolean | null,
+      priority: (template.priority ?? null) as number | null,
+      weight: (template.weight ?? null) as number | null,
+      port: (template.port ?? null) as number | null,
+      service: (template.service ?? null) as string | null,
+      protocol: (template.protocol ?? null) as string | null,
+      onlyNonDefaultPort: Boolean(template.onlyNonDefaultPort ?? template.only_non_default_port),
+      enabled: Boolean(template.enabled),
+    })),
+  };
+}
+
 export async function getAdminConfig(): Promise<AdminConfigResponse> {
   const { data } = await axiosInstance.get('/api/admin/subdomain-manager/config');
-  return data.config;
+  return normalizeAdminConfig(data.config);
 }
 
 export async function upsertProvider(payload: {

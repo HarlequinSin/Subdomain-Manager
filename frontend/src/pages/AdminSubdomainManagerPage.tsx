@@ -111,7 +111,7 @@ export default function AdminSubdomainManagerPage() {
 
   const saveProvider = () => {
     if (!providerToken.trim()) {
-      addToast('Cloudflare API token is required.', 'error');
+      addToast('Cloudflare API token is required to create or update a provider.', 'error');
       return;
     }
 
